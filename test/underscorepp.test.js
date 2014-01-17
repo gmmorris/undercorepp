@@ -7,16 +7,17 @@
 
 $(document).ready(function () {
 
+    var methods = [
+        "extendTopDown",
+        "findIndex",
+        "deepSortBy"
+    ];
+
     /***
      * Test Underscore++ methods which can work on any extended object
      */
     var testUnderscorePPMethods = function(onObject,desc){
 
-        var methods = [
-            "extendTopDown",
-            "findIndex",
-            "deepSortBy"
-        ];
 
         test('should have Underscore++ methods on ' + desc, function () {
             $.each(methods, function(index, value) {
@@ -213,19 +214,150 @@ $(document).ready(function () {
             equal(fromObject.action(),secondValue);
         });
 
+    };
+
+    /***
+     * Test Underscore++ methods which require Underscore to work
+     */
+    var testUnderscorePPMethodsWhichRequireUnderscore = function(onObject,desc,shouldFail){
+
+        test('findIndex should find index of item with array of one item which returns true for the truthTest at context of window', function () {
+            var arr = [1];
+            var truthTest = function(itm){
+                return itm === 1;
+            };
+
+            if(shouldFail) {
+                raises(function(){
+                    onObject.findIndex(arr,truthTest);
+                });
+            } else {
+                equal(onObject.findIndex(arr,truthTest),0);
+            }
+        });
+
+        test('findIndex should find index of item with array of two items which first returns true for the truthTest at context of window', function () {
+            var arr = [1,2];
+            var truthTest = function(itm){
+                return itm === 1;
+            };
+
+            var doTest = function(){
+                equal(onObject.findIndex(arr,truthTest),0);
+            };
+
+            if(shouldFail) {
+                raises(doTest);
+            } else {
+                doTest();
+            }
+        });
+
+        test('findIndex should find index of item with array of two items which second returns true for the truthTest at context of window', function () {
+            var arr = [1,2];
+            var truthTest = function(itm){
+                return itm === 2;
+            };
+
+            var doTest = function(){
+                equal(onObject.findIndex(arr,truthTest),1);
+            };
+
+            if(shouldFail) {
+                raises(doTest);
+            } else {
+                doTest();
+            }
+
+        });
+
+        test('findIndex should not find index (return -1) of item with empty array', function () {
+            var arr = [];
+            var truthTest = function(itm){
+                return true;
+            };
+
+            var doTest = function(){
+                equal(onObject.findIndex(arr,truthTest),-1);
+            };
+
+            if(shouldFail) {
+                raises(doTest);
+            } else {
+                doTest();
+            }
+
+        });
+
+        test('findIndex should not find index (return -1) of item with array which has no value which passes the truthTest', function () {
+            var arr = [1,2,3,4,5];
+            var truthTest = function(itm){
+                return itm > 5;
+            };
+
+            var doTest = function(){
+                equal(onObject.findIndex(arr,truthTest),-1);
+            };
+
+            if(shouldFail) {
+                raises(doTest);
+            } else {
+                doTest();
+            }
+        });
+
+        test('findIndex should find index of item with array of two items which second returns true for the truthTest in specified context', function () {
+            var arr = [1,2];
+            var context = {
+                trueValue: 2
+            };
+
+            var truthTest = function(itm){
+                return this.trueValue === itm;
+            };
+
+            var doTest = function(){
+                equal(onObject.findIndex(arr,truthTest,context),1);
+            };
+
+            if(shouldFail) {
+                raises(doTest);
+            } else {
+                doTest();
+            }
+        });
+
+        test('findIndex should not find index (return -1) of item with array which has no value which passes the truthTest in specified context', function () {
+            var arr = [1,2];
+            var context = {
+                trueValue: 3
+            };
+
+            var truthTest = function(itm){
+                equal(this.trueValue,3);
+                return false;
+            };
+
+            var doTest = function(){
+                equal(onObject.findIndex(arr,truthTest,context),-1);
+            };
+
+            if(shouldFail) {
+                raises(doTest);
+            } else {
+                doTest();
+            }
+        });
+    };
+
+    var testRemovalOfUnderscorePPMethods = function(onObject,desc){
+
         test('should be able to remove the Underscore++ methods from ' + desc, function () {
             _pp.curtail(onObject);
             $.each(methods, function(index, value) {
                 ok(onObject[value] === undefined);
             });
         });
-    };
-
-    /***
-     * Test Underscore++ methods which require Underscore to work
-     */
-    var testUnderscorePPMethodsWhichRequireUnderscore = function(onObject,desc,shouldPass){
-
     };
 
     /**
@@ -243,6 +375,7 @@ $(document).ready(function () {
 
     testUnderscorePPMethods(window._,"the Window level object");
     testUnderscorePPMethodsWhichRequireUnderscore(window._,"the Window level object");
+    testRemovalOfUnderscorePPMethods(window._,"the Window level object");
 
     module("Extension of Underscore.js in noConflict mode", {
         setup: function() {
@@ -256,6 +389,7 @@ $(document).ready(function () {
 
     testUnderscorePPMethods(window._noConflict,"in noConflict mode");
     testUnderscorePPMethodsWhichRequireUnderscore(window._noConflict,"in noConflict mode");
+    testRemovalOfUnderscorePPMethods(window._noConflict,"in noConflict mode");
 
 
     window.nonUnderscoreObject = {
@@ -280,6 +414,7 @@ $(document).ready(function () {
     });
 
     testUnderscorePPMethods(window.nonUnderscoreObject,"a non Underscore.js object");
-    testUnderscorePPMethodsWhichRequireUnderscore(window.nonUnderscoreObject,"a non Underscore.js object");
+    testUnderscorePPMethodsWhichRequireUnderscore(window.nonUnderscoreObject,"a non Underscore.js object",true);
+    testRemovalOfUnderscorePPMethods(window.nonUnderscoreObject,"a non Underscore.js object");
 
 })
