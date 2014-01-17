@@ -50,14 +50,14 @@
                 } else {
                     throw new Error("Underscore++[curtail method]: No object has been specified for curtailing, but Underscore isn't present on the page.");
                 }
-            } else if(typeof obj == "object"){
+            } else if(typeof obj == "object" || typeof obj == "function"){
                 for (var method in this.methods) {
                     if (this.methods.hasOwnProperty(method) && obj[method] && (typeof obj[method] == "function")) {
                         delete obj[method];
                     }
                 }
             } else {
-                throw new Error("Underscore++[curtail method]: An invalid parameter has been supplied, it must be of tpe Object.");
+                throw new Error("Underscore++[curtail method]: An invalid parameter has been supplied, it must be of type Object.");
             }
         },
 
