@@ -221,6 +221,8 @@ $(document).ready(function () {
      */
     var testUnderscorePPMethodsWhichRequireUnderscore = function(onObject,desc,shouldFail){
 
+        // test findIndex
+
         test('findIndex should find index of item with array of one item which returns true for the truthTest at context of window', function () {
             var arr = [1];
             var truthTest = function(itm){
@@ -340,6 +342,86 @@ $(document).ready(function () {
 
             var doTest = function(){
                 equal(onObject.findIndex(arr,truthTest,context),-1);
+            };
+
+            if(shouldFail) {
+                raises(doTest);
+            } else {
+                doTest();
+            }
+        });
+
+        // test deepSortBy
+
+        var compareArrays = function(left,right){
+            if(left instanceof Array && right instanceof Array) {
+                if(left.length == right.length) {
+                    for(var index = 0;index< left.length;index++){
+                        if(left[index] != right[index]) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        test('deepSortBy should fail if no list is specified', function () {
+            var doTest = function(){
+                onObject.deepSortBy();
+            };
+
+            raises(doTest);
+        });
+
+        test('deepSortBy should fail if a non array list is specified', function () {
+            var doTest = function(){
+                onObject.deepSortBy(true);
+            };
+
+            raises(doTest);
+        });
+
+        test('deepSortBy should fail if an array list is specified but no iterator', function () {
+            var doTest = function(){
+                var original = [1,2,3,2];
+                var result = onObject.deepSortBy(original);
+                ok(compareArrays(original,result));
+            };
+
+            raises(doTest);
+        });
+
+        test('deepSortBy should sort array according to iterator if only one is specified', function () {
+            var doTest = function(){
+                var original = [1,2,3,4,11,12,13];
+                var result = onObject.deepSortBy(original,function(itm){
+                    return (itm % 10);
+                });
+                ok(compareArrays(result,[1,11,2,12,3,13,4]));
+            };
+
+            if(shouldFail) {
+                raises(doTest);
+            } else {
+                doTest();
+            }
+        });
+
+        test('deepSortBy should sort array according to multiple iterators if they are specified', function () {
+            var doTest = function(){
+                var original = [1,2,3,4,11,12,13];
+                var result = onObject.deepSortBy(
+                    original,
+                    function(itm){
+                        return (itm % 10);
+                    },
+                    function(itm){
+                        // the bigger the number, the smaller the index
+                        return (-(itm / 10));
+                    });
+                ok(compareArrays(result,[11,1,12,2,13,3,4]));
             };
 
             if(shouldFail) {

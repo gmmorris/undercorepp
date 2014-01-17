@@ -148,7 +148,7 @@
              */
             deepSortBy:function (list,iterator,context) {
                 // Make sure the required Underscore methods are available
-                if(typeof this.pluck != "function" || typeof this.map != "function" || typeof this.sort != "function") {
+                if(typeof this.pluck != "function" || typeof this.map != "function" || typeof this.sortBy != "function") {
                     throw new Error("Underscore++[deepSortBy method]: Some of the Underscore methods are missing, presumably this means an object other than Underscore has been extended by Underscore++.");
                 }
 
@@ -158,7 +158,7 @@
                     throw new Error("Underscore++[deepSortBy method]: The first parameter must be an Array, but is of type " + typeof list);
                 }
 
-                for (var index = 1; index < arguments.length && !context; index++) {
+                for (var index = 1; index < arguments.length; index++) {
                     if (typeof arguments[index] == 'function') {
                         iterators.push(arguments[index]);
                     } else if (typeof arguments[index] == 'object') {
@@ -171,7 +171,7 @@
                     throw new Error("Underscore++[deepSortBy method]: No iterator has been specified to calculate the sort order" + typeof list);
                 } else if (iterators.length == 1) {
                     // only one iterator? No need for sub sort, just use the default sort method
-                    return this.sort.call(this,list,iterators[0],context);
+                    return this.sortBy.call(this,list,iterators[0],context);
                 }
 
                 /**
@@ -181,7 +181,7 @@
                  * Go through the values in the list and create an array of values for each one of the
                  * iterators for each one of the list items
                  */
-                list = this.map(list,function (value, index, list) {
+                var sortedList = this.map(list,function (value, index, list) {
 
                     var criteria = [];
 
@@ -202,7 +202,7 @@
                  * we can compare them using the regular Underscore sort method in which we compare
                  * all the criteria comparison arrays from first iterator through to the last.
                  */
-                list = list.sort(function (left, right) {
+                sortedList.sort(function (left, right) {
                     var a = left.criteria,
                         b = right.criteria,
                         criteriaIndex = 0;
@@ -227,7 +227,7 @@
                  * Step 3: The Pluck
                  * Now that we have the sorted mapped object - pluck out the values.
                  */
-                return this.pluck(list, 'value');
+                return this.pluck(sortedList, 'value');
             }
         }
     };
